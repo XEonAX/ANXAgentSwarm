@@ -1,0 +1,6 @@
+@ANXAgentSwarm.Api_HostAddress = http://localhost:5122
+
+GET {{ANXAgentSwarm.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

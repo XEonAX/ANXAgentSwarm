@@ -1,5 +1,7 @@
+using ANXAgentSwarm.Core.DTOs;
 using ANXAgentSwarm.Core.Entities;
 using ANXAgentSwarm.Core.Enums;
+using ANXAgentSwarm.Core.Extensions;
 using ANXAgentSwarm.Core.Interfaces;
 using ANXAgentSwarm.Core.Models;
 using Microsoft.Extensions.Logging;
@@ -15,6 +17,7 @@ public class AgentOrchestrator : IAgentOrchestrator
     private readonly IMessageRepository _messageRepository;
     private readonly IMemoryService _memoryService;
     private readonly IPersonaEngine _personaEngine;
+    private readonly ISessionHubBroadcaster _hubBroadcaster;
     private readonly ILogger<AgentOrchestrator> _logger;
 
     /// <summary>
@@ -32,12 +35,14 @@ public class AgentOrchestrator : IAgentOrchestrator
         IMessageRepository messageRepository,
         IMemoryService memoryService,
         IPersonaEngine personaEngine,
+        ISessionHubBroadcaster hubBroadcaster,
         ILogger<AgentOrchestrator> logger)
     {
         _sessionRepository = sessionRepository;
         _messageRepository = messageRepository;
         _memoryService = memoryService;
         _personaEngine = personaEngine;
+        _hubBroadcaster = hubBroadcaster;
         _logger = logger;
     }
 
@@ -75,6 +80,10 @@ public class AgentOrchestrator : IAgentOrchestrator
         };
 
         await _messageRepository.CreateAsync(userMessage, cancellationToken);
+
+        // Broadcast the initial message
+        await _hubBroadcaster.BroadcastMessageReceivedAsync(
+            session.Id, userMessage.ToDto(), cancellationToken);
 
         // Process with the Coordinator
         await ProcessWithPersonaAsync(session, userMessage, PersonaType.Coordinator, cancellationToken);
@@ -152,10 +161,18 @@ public class AgentOrchestrator : IAgentOrchestrator
 
         await _messageRepository.CreateAsync(userMessage, cancellationToken);
 
+        // Broadcast the user response message
+        await _hubBroadcaster.BroadcastMessageReceivedAsync(
+            session.Id, userMessage.ToDto(), cancellationToken);
+
         // Update session status back to active
         session.Status = SessionStatus.Active;
         session.UpdatedAt = DateTime.UtcNow;
         await _sessionRepository.UpdateAsync(session, cancellationToken);
+
+        // Broadcast status change
+        await _hubBroadcaster.BroadcastSessionStatusChangedAsync(
+            session.Id, session.ToDto(), cancellationToken);
 
         // Continue processing with the persona that requested clarification
         var responseMessage = await ProcessWithPersonaAsync(
@@ -282,6 +299,10 @@ public class AgentOrchestrator : IAgentOrchestrator
 
             await _messageRepository.CreateAsync(responseMessage, cancellationToken);
 
+            // Broadcast the message received
+            await _hubBroadcaster.BroadcastMessageReceivedAsync(
+                session.Id, responseMessage.ToDto(), cancellationToken);
+
             // Handle the response based on its type
             switch (response.ResponseType)
             {
@@ -402,6 +423,10 @@ public class AgentOrchestrator : IAgentOrchestrator
 
             await _messageRepository.CreateAsync(compiledMessage, cancellationToken);
 
+            // Broadcast the compiled message
+            await _hubBroadcaster.BroadcastMessageReceivedAsync(
+                session.Id, compiledMessage.ToDto(), cancellationToken);
+
             session.FinalSolution = coordinatorResponse.Content;
         }
         else
@@ -413,6 +438,10 @@ public class AgentOrchestrator : IAgentOrchestrator
         session.CurrentPersona = null;
         session.UpdatedAt = DateTime.UtcNow;
         await _sessionRepository.UpdateAsync(session, cancellationToken);
+
+        // Broadcast solution ready
+        await _hubBroadcaster.BroadcastSolutionReadyAsync(
+            session.Id, session.ToDto(), cancellationToken);
     }
 
     /// <summary>
@@ -430,6 +459,14 @@ public class AgentOrchestrator : IAgentOrchestrator
         session.Status = SessionStatus.WaitingForClarification;
         session.UpdatedAt = DateTime.UtcNow;
         await _sessionRepository.UpdateAsync(session, cancellationToken);
+
+        // Broadcast status change
+        await _hubBroadcaster.BroadcastSessionStatusChangedAsync(
+            session.Id, session.ToDto(), cancellationToken);
+
+        // Broadcast clarification request
+        await _hubBroadcaster.BroadcastClarificationRequestedAsync(
+            session.Id, clarificationMessage.ToDto(), cancellationToken);
     }
 
     /// <summary>
@@ -464,6 +501,10 @@ public class AgentOrchestrator : IAgentOrchestrator
 
         await _messageRepository.CreateAsync(coordinatorMessage, cancellationToken);
 
+        // Broadcast the coordinator's response
+        await _hubBroadcaster.BroadcastMessageReceivedAsync(
+            session.Id, coordinatorMessage.ToDto(), cancellationToken);
+
         // If Coordinator delegated to someone else, continue processing
         if (response.ResponseType == MessageType.Delegation && response.DelegateToPersona != null)
         {
@@ -491,6 +532,10 @@ public class AgentOrchestrator : IAgentOrchestrator
         session.CurrentPersona = null;
         session.UpdatedAt = DateTime.UtcNow;
         await _sessionRepository.UpdateAsync(session, cancellationToken);
+
+        // Broadcast session stuck
+        await _hubBroadcaster.BroadcastSessionStuckAsync(
+            session.Id, session.ToDto(), partialSolution, cancellationToken);
     }
 
     /// <summary>

@@ -1,3 +1,5 @@
+using ANXAgentSwarm.Api.Hubs;
+using ANXAgentSwarm.Core.Interfaces;
 using ANXAgentSwarm.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,9 @@ builder.Services.AddSignalR();
 
 // Add Infrastructure services (repositories, DbContext, Ollama provider, etc.)
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Register SessionHub broadcaster (bridges Infrastructure with API layer)
+builder.Services.AddScoped<ISessionHubBroadcaster, SessionHubBroadcaster>();
 
 // Add CORS for frontend development
 builder.Services.AddCors(options =>
@@ -38,6 +43,9 @@ app.UseCors("AllowFrontend");
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR hub
+app.MapHub<SessionHub>("/hubs/session");
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));

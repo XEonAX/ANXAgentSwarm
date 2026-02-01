@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{2151710C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANXAgentSwarm.Infrastructure.Tests", "tests\ANXAgentSwarm.Infrastructure.Tests\ANXAgentSwarm.Infrastructure.Tests.csproj", "{5E0F81EE-D37B-47FA-A20A-22865A079BC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANXAgentSwarm.Integration.Tests", "tests\ANXAgentSwarm.Integration.Tests\ANXAgentSwarm.Integration.Tests.csproj", "{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,11 +42,16 @@ Global
 		{5E0F81EE-D37B-47FA-A20A-22865A079BC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E0F81EE-D37B-47FA-A20A-22865A079BC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E0F81EE-D37B-47FA-A20A-22865A079BC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8A80FCF1-DB39-44B5-ADD8-076A9E85E19B} = {3003BDDA-2EFC-4AFB-9896-C0623EB13F65}
 		{CBE30E45-2184-48B4-9670-66994E2B5D97} = {3003BDDA-2EFC-4AFB-9896-C0623EB13F65}
 		{8992FA41-1F41-4B19-A301-F95C99211DC4} = {3003BDDA-2EFC-4AFB-9896-C0623EB13F65}
 		{5E0F81EE-D37B-47FA-A20A-22865A079BC8} = {2151710C-D61E-406F-94DD-7D69758AE4F6}
+		{7A2F8E4C-D9B1-4F3A-8E6D-5C4B3A2E1F0D} = {2151710C-D61E-406F-94DD-7D69758AE4F6}
 	EndGlobalSection
 EndGlobal

@@ -218,6 +218,17 @@ export function useSession(sessionId?: string) {
       isConnected.value = false
     }
   }
+
+  /**
+   * Clears the current session state (used when switching to new session mode).
+   */
+  async function clearSession(): Promise<void> {
+    await disconnect()
+    store.clearCurrentSession()
+    activeSessionId.value = null
+    clarificationQuestion.value = null
+    clarificationPersona.value = null
+  }
   
   /**
    * Refreshes the current session data from the server.
@@ -286,6 +297,7 @@ export function useSession(sessionId?: string) {
     submitClarification,
     cancelSession,
     disconnect,
+    clearSession,
     refresh
   }
 }

@@ -150,6 +150,36 @@ public class ResponseParserTests
         result.Content.Should().Contain("microservices pattern");
     }
 
+    [Fact]
+    public void Parse_WithSolution_AndClosingTag_ExcludesClosingTag()
+    {
+        // Arrange - LLM incorrectly uses closing tag
+        var rawResponse = "[SOLUTION] The task is complete.[/SOLUTION]";
+
+        // Act
+        var result = ResponseParser.Parse(rawResponse);
+
+        // Assert
+        result.ResponseType.Should().Be(MessageType.Solution);
+        result.Content.Should().Be("The task is complete.");
+        result.Content.Should().NotContain("[/SOLUTION]");
+    }
+
+    [Fact]
+    public void Parse_WithDelegate_AndClosingTag_ExcludesClosingTag()
+    {
+        // Arrange - LLM incorrectly uses closing tag
+        var rawResponse = "[DELEGATE:JuniorDeveloper] Create the files.[/DELEGATE]";
+
+        // Act
+        var result = ResponseParser.Parse(rawResponse);
+
+        // Assert
+        result.ResponseType.Should().Be(MessageType.Delegation);
+        result.DelegationContext.Should().Be("Create the files.");
+        result.DelegationContext.Should().NotContain("[/DELEGATE]");
+    }
+
     #endregion
 
     #region Stuck Parsing Tests
@@ -374,6 +404,40 @@ public class ResponseParserTests
 
         // Assert
         cleaned.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CleanContent_RemovesClosingTags()
+    {
+        // Arrange - LLM incorrectly generates closing tags
+        var rawResponse = "The task is complete.[/SOLUTION]";
+
+        // Act
+        var cleaned = ResponseParser.CleanContent(rawResponse);
+
+        // Assert
+        cleaned.Should().Be("The task is complete.");
+        cleaned.Should().NotContain("[/SOLUTION]");
+    }
+
+    [Fact]
+    public void CleanContent_RemovesAllClosingTagVariants()
+    {
+        // Arrange - LLM incorrectly generates various closing tags
+        var rawResponse = "Content[/DELEGATE] more[/CLARIFY] text[/STUCK] end[/STORE]";
+
+        // Act
+        var cleaned = ResponseParser.CleanContent(rawResponse);
+
+        // Assert
+        cleaned.Should().NotContain("[/DELEGATE]");
+        cleaned.Should().NotContain("[/CLARIFY]");
+        cleaned.Should().NotContain("[/STUCK]");
+        cleaned.Should().NotContain("[/STORE]");
+        cleaned.Should().Contain("Content");
+        cleaned.Should().Contain("more");
+        cleaned.Should().Contain("text");
+        cleaned.Should().Contain("end");
     }
 
     #endregion

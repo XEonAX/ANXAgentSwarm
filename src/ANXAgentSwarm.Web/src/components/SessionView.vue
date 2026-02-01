@@ -36,7 +36,8 @@ const {
   loadSession,
   createSession,
   submitClarification,
-  cancelSession
+  cancelSession,
+  clearSession
 } = useSession()
 
 // Local state for creating new session
@@ -65,12 +66,15 @@ const isInputDisabled = computed(() => {
   return isActive.value && !requiresClarification.value
 })
 
-// Load session when ID changes
+// Load session when ID changes, or clear when switching to new session mode
 watch(
   () => props.sessionId,
   async (newId) => {
     if (newId) {
       await loadSession(newId)
+    } else {
+      // Switching to new session mode - clear the previous session
+      await clearSession()
     }
   },
   { immediate: true }

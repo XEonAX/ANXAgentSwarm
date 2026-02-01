@@ -48,7 +48,9 @@ public class SessionRepository : ISessionRepository
         SessionStatus? status = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _context.Sessions.AsQueryable();
+        var query = _context.Sessions
+            .Include(s => s.Messages)
+            .AsQueryable();
 
         if (status.HasValue)
         {

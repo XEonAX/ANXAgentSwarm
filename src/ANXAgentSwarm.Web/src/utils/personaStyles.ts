@@ -347,10 +347,23 @@ export function getMessageTypeStyle(messageType: MessageType): MessageTypeStyle 
 }
 
 /**
+ * Parse a timestamp string as UTC.
+ * The backend returns UTC timestamps without the 'Z' suffix,
+ * so we need to append it to ensure correct parsing.
+ */
+function parseUtcTimestamp(timestamp: string): Date {
+  // If the timestamp doesn't have timezone info, treat it as UTC
+  if (!timestamp.endsWith('Z') && !timestamp.includes('+') && !timestamp.includes('-', 10)) {
+    return new Date(timestamp + 'Z')
+  }
+  return new Date(timestamp)
+}
+
+/**
  * Format a timestamp for display.
  */
 export function formatTimestamp(timestamp: string): string {
-  const date = new Date(timestamp)
+  const date = parseUtcTimestamp(timestamp)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
@@ -380,7 +393,7 @@ export function formatTimestamp(timestamp: string): string {
  * Format a timestamp with time.
  */
 export function formatTimestampWithTime(timestamp: string): string {
-  const date = new Date(timestamp)
+  const date = parseUtcTimestamp(timestamp)
   return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',

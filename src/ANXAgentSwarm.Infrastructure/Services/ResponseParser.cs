@@ -19,6 +19,7 @@ public static partial class ResponseParser
     private static readonly Regex DeclinePattern = DeclineRegex();
     private static readonly Regex ReasoningPattern = ReasoningRegex();
     private static readonly Regex FilePattern = FileRegex();
+    private static readonly Regex ClosingTagPattern = ClosingTagRegex();
 
     /// <summary>
     /// Parses an LLM response and extracts structured data.
@@ -336,6 +337,9 @@ public static partial class ResponseParser
         cleaned = DeclinePattern.Replace(cleaned, "");
         cleaned = ReasoningPattern.Replace(cleaned, "");
         cleaned = FilePattern.Replace(cleaned, "");
+        
+        // Remove any closing tags that the LLM might incorrectly generate
+        cleaned = ClosingTagPattern.Replace(cleaned, "");
 
         // Clean up extra whitespace
         cleaned = Regex.Replace(cleaned, @"\n{3,}", "\n\n");
@@ -344,25 +348,25 @@ public static partial class ResponseParser
     }
 
     // Generated regex patterns for performance
-    [GeneratedRegex(@"\[DELEGATE:(?<persona>[^\]]+)\]\s*(?<context>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[DELEGATE:(?<persona>[^\]]+)\]\s*(?<context>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex DelegateRegex();
 
-    [GeneratedRegex(@"\[CLARIFY\]\s*(?<question>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[CLARIFY\]\s*(?<question>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex ClarifyRegex();
 
-    [GeneratedRegex(@"\[SOLUTION\]\s*(?<solution>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[SOLUTION\]\s*(?<solution>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex SolutionRegex();
 
-    [GeneratedRegex(@"\[STUCK\]\s*(?<reason>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[STUCK\]\s*(?<reason>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex StuckRegex();
 
-    [GeneratedRegex(@"\[STORE:(?<identifier>[^\]]+)\]\s*(?<content>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[STORE:(?<identifier>[^\]]+)\]\s*(?<content>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex StoreRegex();
 
     [GeneratedRegex(@"\[REMEMBER:(?<identifier>[^\]]+)\]", RegexOptions.IgnoreCase)]
     private static partial Regex RememberRegex();
 
-    [GeneratedRegex(@"\[DECLINE\]\s*(?<reason>[\s\S]*?)(?=\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"\[DECLINE\]\s*(?<reason>[\s\S]*?)(?=\[/?(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]|\[(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE):|$)", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex DeclineRegex();
 
     [GeneratedRegex(@"\[REASONING\]\s*(?<reasoning>[\s\S]*?)\[/REASONING\]", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
@@ -373,4 +377,7 @@ public static partial class ResponseParser
 
     [GeneratedRegex(@"^`{3,}\w*\s*(?<code>[\s\S]*?)`{3,}$", RegexOptions.Singleline)]
     private static partial Regex CodeBlockRegex();
+
+    [GeneratedRegex(@"\[/(?:DELEGATE|CLARIFY|SOLUTION|STUCK|STORE|REMEMBER|DECLINE)\]", RegexOptions.IgnoreCase)]
+    private static partial Regex ClosingTagRegex();
 }

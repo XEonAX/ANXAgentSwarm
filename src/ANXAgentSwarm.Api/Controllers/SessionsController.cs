@@ -14,16 +14,44 @@ public class SessionsController : ControllerBase
 {
     private readonly ISessionRepository _sessionRepository;
     private readonly IMessageRepository _messageRepository;
+    private readonly IAgentOrchestrator _orchestrator;
     private readonly ILogger<SessionsController> _logger;
 
     public SessionsController(
         ISessionRepository sessionRepository,
         IMessageRepository messageRepository,
+        IAgentOrchestrator orchestrator,
         ILogger<SessionsController> logger)
     {
         _sessionRepository = sessionRepository;
         _messageRepository = messageRepository;
+        _orchestrator = orchestrator;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Creates a new problem-solving session.
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<SessionDetailDto>> Create(
+        [FromBody] CreateSessionRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.ProblemStatement))
+        {
+            return BadRequest(new { message = "Problem statement is required" });
+        }
+
+        try
+        {
+            var session = await _orchestrator.StartSessionAsync(request.ProblemStatement, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id = session.Id }, session.ToDetailDto());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating session");
+            return StatusCode(500, new { message = "An error occurred while processing your request" });
+        }
     }
 
     /// <summary>
@@ -50,6 +78,101 @@ public class SessionsController : ControllerBase
         }
 
         return Ok(session.ToDetailDto());
+    }
+
+    /// <summary>
+    /// Submits a user clarification response.
+    /// </summary>
+    [HttpPost("{id:guid}/clarify")]
+    public async Task<ActionResult<MessageDto>> SubmitClarification(
+        Guid id,
+        [FromBody] ClarificationResponse request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Response))
+        {
+            return BadRequest(new { message = "Response is required" });
+        }
+
+        try
+        {
+            var message = await _orchestrator.HandleUserClarificationAsync(
+                id, request.Response, cancellationToken);
+            return Ok(message.ToDto());
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting clarification for session {SessionId}", id);
+            return StatusCode(500, new { message = "An error occurred while processing your request" });
+        }
+    }
+
+    /// <summary>
+    /// Resumes a paused or stuck session.
+    /// </summary>
+    [HttpPost("{id:guid}/resume")]
+    public async Task<ActionResult<SessionDetailDto>> Resume(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var session = await _orchestrator.ResumeSessionAsync(id, cancellationToken);
+            return Ok(session.ToDetailDto());
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resuming session {SessionId}", id);
+            return StatusCode(500, new { message = "An error occurred while processing your request" });
+        }
+    }
+
+    /// <summary>
+    /// Cancels a session.
+    /// </summary>
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _orchestrator.CancelSessionAsync(id, cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error cancelling session {SessionId}", id);
+            return StatusCode(500, new { message = "An error occurred while processing your request" });
+        }
+    }
+
+    /// <summary>
+    /// Gets all messages for a session.
+    /// </summary>
+    [HttpGet("{id:guid}/messages")]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var exists = await _sessionRepository.ExistsAsync(id, cancellationToken);
+        if (!exists)
+        {
+            return NotFound(new { message = $"Session with ID {id} not found" });
+        }
+
+        var messages = await _messageRepository.GetBySessionIdAsync(id, cancellationToken);
+        return Ok(messages.Select(m => m.ToDto()));
     }
 
     /// <summary>

@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkspaceService, WorkspaceService>();
         services.AddScoped<IMemoryService, MemoryService>();
         services.AddScoped<IPersonaEngine, PersonaEngine>();
+        services.AddScoped<IAgentOrchestrator, AgentOrchestrator>();
 
         // Register Ollama provider with HttpClient
         services.AddHttpClient<ILlmProvider, OllamaProvider>();

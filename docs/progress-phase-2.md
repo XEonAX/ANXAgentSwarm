@@ -174,6 +174,7 @@ Continue with Phase 3: Agent Orchestrator
 - Handle clarification requests and user responses
 - Implement stuck detection and partial solution compilation
 - Wire up the service in DI
+- Provide the next prompt
 - Update docs/progress-phase-3.md after completion
 ```
 

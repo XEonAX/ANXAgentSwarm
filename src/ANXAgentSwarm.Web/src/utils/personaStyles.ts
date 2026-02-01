@@ -260,6 +260,12 @@ export function getStatusStyle(status: SessionStatus): StatusStyle {
       textColor: 'text-red-800',
       borderColor: 'border-red-300',
       icon: '❌'
+    },
+    [SessionStatus.Interrupted]: {
+      bgColor: 'bg-purple-100',
+      textColor: 'text-purple-800',
+      borderColor: 'border-purple-300',
+      icon: '⏸️'
     }
   }
 
@@ -276,7 +282,8 @@ export function getStatusDisplayName(status: SessionStatus): string {
     [SessionStatus.Completed]: 'Completed',
     [SessionStatus.Stuck]: 'Stuck',
     [SessionStatus.Cancelled]: 'Cancelled',
-    [SessionStatus.Error]: 'Error'
+    [SessionStatus.Error]: 'Error',
+    [SessionStatus.Interrupted]: 'Interrupted'
   }
 
   return names[status] ?? 'Unknown'

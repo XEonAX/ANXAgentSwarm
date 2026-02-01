@@ -50,6 +50,9 @@ public static class DependencyInjection
         // Register Ollama provider with HttpClient
         services.AddHttpClient<ILlmProvider, OllamaProvider>();
 
+        // Register startup recovery service to handle interrupted sessions
+        services.AddHostedService<SessionRecoveryService>();
+
         return services;
     }
 

@@ -82,6 +82,8 @@ export function useSession(sessionId?: string) {
         return 'Cancelled'
       case SessionStatusEnum.Error:
         return 'Error occurred'
+      case SessionStatusEnum.Interrupted:
+        return 'Interrupted - can resume'
       default:
         return 'Unknown'
     }
@@ -159,6 +161,13 @@ export function useSession(sessionId?: string) {
    */
   async function cancelSession(): Promise<void> {
     await store.cancelSession()
+  }
+
+  /**
+   * Resumes a stuck, interrupted, or error session.
+   */
+  async function resumeSession(): Promise<void> {
+    await store.resumeSession()
   }
   
   /**
@@ -296,6 +305,7 @@ export function useSession(sessionId?: string) {
     createSession,
     submitClarification,
     cancelSession,
+    resumeSession,
     disconnect,
     clearSession,
     refresh

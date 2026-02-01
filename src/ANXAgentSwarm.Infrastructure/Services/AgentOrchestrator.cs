@@ -250,7 +250,9 @@ public class AgentOrchestrator : IAgentOrchestrator
             await ProcessWithPersonaAsync(
                 session, lastMessage, lastMessage.DelegateToPersona.Value, cancellationToken);
         }
-        else if (lastMessage.MessageType == MessageType.Stuck)
+        else if (lastMessage.MessageType == MessageType.Stuck 
+            || session.Status == SessionStatus.Interrupted 
+            || session.Status == SessionStatus.Error)
         {
             // Try to recover - send back to Coordinator for alternative approach
             session.Status = SessionStatus.Active;

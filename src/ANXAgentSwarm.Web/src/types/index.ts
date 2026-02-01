@@ -49,7 +49,9 @@ export enum SessionStatus {
   /** Session was cancelled by the user. */
   Cancelled = 4,
   /** Session encountered an error. */
-  Error = 5
+  Error = 5,
+  /** Session was interrupted (e.g., server restart while processing). */
+  Interrupted = 6
 }
 
 /**
@@ -373,6 +375,11 @@ export function getSessionStatusInfo(status: SessionStatus): SessionStatusInfo {
       displayName: 'Error',
       color: 'red',
       icon: '❌'
+    },
+    [SessionStatus.Interrupted]: {
+      displayName: 'Interrupted',
+      color: 'purple',
+      icon: '⏸️'
     }
   }
 

@@ -33,5 +33,10 @@ public enum SessionStatus
     /// <summary>
     /// Session encountered an error.
     /// </summary>
-    Error = 5
+    Error = 5,
+
+    /// <summary>
+    /// Session was interrupted (e.g., server restart while processing).
+    /// </summary>
+    Interrupted = 6
 }

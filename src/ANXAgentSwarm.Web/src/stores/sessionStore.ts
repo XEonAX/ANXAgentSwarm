@@ -232,6 +232,44 @@ export const useSessionStore = defineStore('session', () => {
   }
 
   /**
+   * Resumes a stuck, interrupted, or error session.
+   */
+  async function resumeSession(): Promise<void> {
+    if (!currentSession.value) {
+      throw new Error('No active session')
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await fetch(`${API_BASE}/${currentSession.value.id}/resume`, {
+        method: 'POST'
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to resume session: ${response.statusText}`)
+      }
+      
+      // Update local state to Active
+      if (currentSession.value) {
+        currentSession.value.status = 0 // Active
+      }
+      
+      // Update in sessions list
+      const idx = sessions.value.findIndex(s => s.id === currentSession.value?.id)
+      if (idx !== -1 && sessions.value[idx]) {
+        sessions.value[idx]!.status = 0 // Active
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(String(err))
+      throw error.value
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Deletes a session.
    */
   async function deleteSession(sessionId: string): Promise<void> {
@@ -363,6 +401,7 @@ export const useSessionStore = defineStore('session', () => {
     createSession,
     submitClarification,
     cancelSession,
+    resumeSession,
     deleteSession,
     
     // Real-time handlers

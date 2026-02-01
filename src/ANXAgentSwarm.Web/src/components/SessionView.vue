@@ -4,6 +4,7 @@ import { useSession } from '@/composables/useSession'
 import Timeline from '@/components/Timeline.vue'
 import UserInput from '@/components/UserInput.vue'
 import SessionHeader from '@/components/SessionHeader.vue'
+import SolutionViewer from '@/components/SolutionViewer.vue'
 import { SessionStatus } from '@/types'
 
 const props = defineProps<{
@@ -168,17 +169,12 @@ async function handleCancelSession(): Promise<void> {
     >
       <div
         v-if="isComplete && finalSolution"
-        class="flex-shrink-0 mx-4 mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg"
+        class="flex-shrink-0 mx-4 mt-4"
       >
-        <div class="flex items-start gap-3">
-          <span class="text-emerald-500 text-2xl">✅</span>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-semibold text-emerald-800 mb-2">Solution Ready</h4>
-            <div class="text-sm text-emerald-700 whitespace-pre-wrap">
-              {{ finalSolution }}
-            </div>
-          </div>
-        </div>
+        <SolutionViewer
+          :solution="finalSolution"
+          title="Solution Ready"
+        />
       </div>
     </Transition>
 

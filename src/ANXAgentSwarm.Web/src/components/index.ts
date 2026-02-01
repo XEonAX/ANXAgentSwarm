@@ -17,3 +17,13 @@ export { default as SessionHeader } from './SessionHeader.vue'
 
 // Input Components
 export { default as UserInput } from './UserInput.vue'
+
+// Persona Components
+export { default as PersonaAvatar } from './PersonaAvatar.vue'
+export { default as PersonaBadge } from './PersonaBadge.vue'
+
+// Dialog Components
+export { default as ClarificationDialog } from './ClarificationDialog.vue'
+
+// Viewer Components
+export { default as SolutionViewer } from './SolutionViewer.vue'

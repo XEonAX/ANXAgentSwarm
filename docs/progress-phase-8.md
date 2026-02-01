@@ -292,4 +292,5 @@ Tasks:
 - [ ] Implement solution viewer component
 - [ ] Add responsive layout
 - [ ] Configure development proxy to .NET backend
+- [ ] Provide the next prompt
 ```

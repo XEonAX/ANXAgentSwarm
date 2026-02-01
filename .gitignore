@@ -416,3 +416,30 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Playwright
+/src/ANXAgentSwarm.Web/playwright-report/
+/src/ANXAgentSwarm.Web/playwright-results/
+/src/ANXAgentSwarm.Web/test-results/
+/src/ANXAgentSwarm.Web/e2e/__snapshots__/
+
+# Build output
+/build/
+
+# Environment files (keep examples)
+.env
+.env.local
+!.env.example
+!.env.development
+!.env.production
+
+# SQLite database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Workspace folder contents (but keep the folder)
+/workspace/*
+!/workspace/.gitkeep
+

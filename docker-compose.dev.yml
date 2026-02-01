@@ -1,0 +1,43 @@
+# ANXAgentSwarm - Development Docker Compose Override
+#
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# This override provides:
+# - Hot reload for API
+# - Volume mounts for source code
+# - Development-friendly configurations
+#
+
+services:
+  # Override API service for development
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: build-api  # Use build stage for hot reload
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=1
+    volumes:
+      - ./src:/src/src:ro
+      - api_data:/app/data
+      - workspace_data:/app/workspace
+    command: ["dotnet", "watch", "run", "--project", "/src/src/ANXAgentSwarm.Api/ANXAgentSwarm.Api.csproj"]
+    
+  # Web service uses Vite dev server in development
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src/ANXAgentSwarm.Web:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://api:5046
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+volumes:
+  api_data:
+  workspace_data:

@@ -1,0 +1,139 @@
+# ANXAgentSwarm - Full Stack Docker Compose Configuration
+# 
+# This docker-compose file sets up the complete ANXAgentSwarm stack:
+# - API: .NET 8 ASP.NET Core Web API with SignalR
+# - Web: Vue 3 frontend served by Nginx
+# - Ollama: Local LLM provider
+#
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose down           # Stop all services
+#   docker-compose logs -f        # View logs
+#   docker-compose ps             # View service status
+#
+# For development:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+
+services:
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: anxagentswarm-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Remove GPU section if not using NVIDIA GPU
+    # Comment out the deploy section above and uncomment below for CPU-only:
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: anxagentswarm-api
+    ports:
+      - "5046:5046"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5046
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/anxagentswarm.db
+      - Ollama__BaseUrl=http://ollama:11434
+      - Ollama__DefaultModel=${OLLAMA_MODEL:-gemma3}
+      - Ollama__TimeoutSeconds=120
+      - Workspace__RootPath=/app/workspace
+      - Memory__MaxWordsPerMemory=2000
+      - Memory__MaxIdentifierWords=10
+      - Memory__MaxMemoriesPerPersonaPerSession=10
+    volumes:
+      - api_data:/app/data
+      - workspace_data:/app/workspace
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5046/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # Web Frontend Service
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        - VITE_API_URL=http://localhost:5046
+    container_name: anxagentswarm-web
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Model initialization service (pulls the default model on first run)
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: anxagentswarm-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Checking if model ${OLLAMA_MODEL:-gemma3} is available..."
+        if ! ollama list | grep -q "${OLLAMA_MODEL:-gemma3}"; then
+          echo "Pulling model ${OLLAMA_MODEL:-gemma3}..."
+          ollama pull ${OLLAMA_MODEL:-gemma3}
+          echo "Model pulled successfully!"
+        else
+          echo "Model ${OLLAMA_MODEL:-gemma3} already available."
+        fi
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+volumes:
+  ollama_data:
+    driver: local
+  api_data:
+    driver: local
+  workspace_data:
+    driver: local
+
+networks:
+  default:
+    name: anxagentswarm-network
+    driver: bridge

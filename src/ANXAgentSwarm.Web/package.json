@@ -1,12 +1,24 @@
 {
   "name": "anxagentswarm-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "build:prod": "NODE_ENV=production vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:webkit": "playwright test --project=webkit",
+    "test:a11y": "playwright test --project=accessibility",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "test:report": "playwright show-report",
+    "playwright:install": "playwright install --with-deps"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
@@ -14,6 +26,8 @@
     "vue": "^3.5.24"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@playwright/test": "^1.50.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",

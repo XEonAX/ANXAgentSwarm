@@ -1,0 +1,48 @@
+# Build stage for .NET API
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-api
+WORKDIR /src
+
+# Copy solution and project files
+COPY ANXAgentSwarm.sln ./
+COPY src/ANXAgentSwarm.Api/ANXAgentSwarm.Api.csproj src/ANXAgentSwarm.Api/
+COPY src/ANXAgentSwarm.Core/ANXAgentSwarm.Core.csproj src/ANXAgentSwarm.Core/
+COPY src/ANXAgentSwarm.Infrastructure/ANXAgentSwarm.Infrastructure.csproj src/ANXAgentSwarm.Infrastructure/
+
+# Restore dependencies
+RUN dotnet restore
+
+# Copy all source code
+COPY src/ src/
+
+# Build and publish
+WORKDIR /src/src/ANXAgentSwarm.Api
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Runtime stage for API
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api
+WORKDIR /app
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy published app
+COPY --from=build-api /app/publish .
+
+# Create workspace directory
+RUN mkdir -p /app/workspace
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:5046
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ConnectionStrings__DefaultConnection="Data Source=/app/data/anxagentswarm.db"
+ENV Workspace__RootPath=/app/workspace
+
+# Expose port
+EXPOSE 5046
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5046/health || exit 1
+
+# Entry point
+ENTRYPOINT ["dotnet", "ANXAgentSwarm.Api.dll"]

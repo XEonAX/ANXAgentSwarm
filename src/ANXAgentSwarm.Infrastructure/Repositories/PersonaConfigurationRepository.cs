@@ -85,14 +85,28 @@ public class PersonaConfigurationRepository : IPersonaConfigurationRepository
 
     public async Task SeedDefaultsAsync(CancellationToken cancellationToken = default)
     {
-        var existingCount = await _context.PersonaConfigurations.CountAsync(cancellationToken);
-        if (existingCount > 0)
-        {
-            return; // Already seeded
-        }
-
         var defaults = GetDefaultConfigurations();
-        _context.PersonaConfigurations.AddRange(defaults);
+        
+        foreach (var defaultConfig in defaults)
+        {
+            var existing = await _context.PersonaConfigurations
+                .FirstOrDefaultAsync(p => p.PersonaType == defaultConfig.PersonaType, cancellationToken);
+            
+            if (existing == null)
+            {
+                // Add new configuration
+                _context.PersonaConfigurations.Add(defaultConfig);
+            }
+            else
+            {
+                // Update existing configuration with latest system prompt
+                existing.SystemPrompt = defaultConfig.SystemPrompt;
+                existing.Description = defaultConfig.Description;
+                // Note: We preserve user-customized settings like ModelName, Temperature, etc.
+                _context.PersonaConfigurations.Update(existing);
+            }
+        }
+        
         await _context.SaveChangesAsync(cancellationToken);
     }
 

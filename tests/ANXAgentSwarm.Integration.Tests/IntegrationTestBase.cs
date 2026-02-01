@@ -1,6 +1,7 @@
 using ANXAgentSwarm.Core.Interfaces;
 using ANXAgentSwarm.Infrastructure.Configuration;
 using ANXAgentSwarm.Infrastructure.Data;
+using ANXAgentSwarm.Infrastructure.FileSystem;
 using ANXAgentSwarm.Infrastructure.Repositories;
 using ANXAgentSwarm.Infrastructure.Services;
 using ANXAgentSwarm.Integration.Tests.Mocks;
@@ -78,11 +79,19 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             options.MaxMemoriesPerPersonaPerSession = 10;
         });
 
+        services.Configure<WorkspaceOptions>(options =>
+        {
+            options.RootPath = Path.Combine(Path.GetTempPath(), $"ANXAgentSwarm_Test_{Guid.NewGuid()}");
+        });
+
         // Add repositories
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IMemoryRepository, MemoryRepository>();
         services.AddScoped<IPersonaConfigurationRepository, PersonaConfigurationRepository>();
+
+        // Add workspace service
+        services.AddScoped<IWorkspaceService, WorkspaceService>();
 
         // Create mocks
         MockLlm = new MockLlmProvider();

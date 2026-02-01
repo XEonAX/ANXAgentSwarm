@@ -18,6 +18,7 @@ public static partial class ResponseParser
     private static readonly Regex RememberPattern = RememberRegex();
     private static readonly Regex DeclinePattern = DeclineRegex();
     private static readonly Regex ReasoningPattern = ReasoningRegex();
+    private static readonly Regex FilePattern = FileRegex();
 
     /// <summary>
     /// Parses an LLM response and extracts structured data.
@@ -201,6 +202,36 @@ public static partial class ResponseParser
     }
 
     /// <summary>
+    /// Extracts file write commands from the response.
+    /// </summary>
+    /// <param name="rawResponse">The raw LLM response text.</param>
+    /// <returns>A list of (filePath, content) tuples for files to write.</returns>
+    public static List<(string FilePath, string Content)> ExtractFileWrites(string rawResponse)
+    {
+        var files = new List<(string FilePath, string Content)>();
+        
+        if (string.IsNullOrWhiteSpace(rawResponse))
+        {
+            return files;
+        }
+
+        var matches = FilePattern.Matches(rawResponse);
+        foreach (Match match in matches)
+        {
+            var filePath = match.Groups["path"].Value.Trim();
+            var content = match.Groups["content"].Value.Trim();
+            
+            // Basic path validation - ensure it's a relative path
+            if (!string.IsNullOrWhiteSpace(filePath) && !Path.IsPathRooted(filePath))
+            {
+                files.Add((filePath, content));
+            }
+        }
+
+        return files;
+    }
+
+    /// <summary>
     /// Gets the content before a specific tag.
     /// </summary>
     private static string GetContentBeforeTag(string rawResponse, string tag)
@@ -275,6 +306,7 @@ public static partial class ResponseParser
         cleaned = RememberPattern.Replace(cleaned, "");
         cleaned = DeclinePattern.Replace(cleaned, "");
         cleaned = ReasoningPattern.Replace(cleaned, "");
+        cleaned = FilePattern.Replace(cleaned, "");
 
         // Clean up extra whitespace
         cleaned = Regex.Replace(cleaned, @"\n{3,}", "\n\n");
@@ -306,4 +338,7 @@ public static partial class ResponseParser
 
     [GeneratedRegex(@"\[REASONING\]\s*(?<reasoning>[\s\S]*?)\[/REASONING\]", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex ReasoningRegex();
+
+    [GeneratedRegex(@"\[FILE:(?<path>[^\]]+)\]\s*(?<content>[\s\S]*?)\[/FILE\]", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex FileRegex();
 }

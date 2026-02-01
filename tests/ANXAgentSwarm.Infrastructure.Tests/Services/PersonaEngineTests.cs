@@ -17,6 +17,7 @@ public class PersonaEngineTests
     private readonly Mock<ILlmProvider> _llmProviderMock;
     private readonly Mock<IPersonaConfigurationRepository> _personaConfigRepoMock;
     private readonly Mock<IMemoryService> _memoryServiceMock;
+    private readonly Mock<IWorkspaceService> _workspaceServiceMock;
     private readonly Mock<ILogger<PersonaEngine>> _loggerMock;
     private readonly PersonaEngine _sut;
 
@@ -25,12 +26,14 @@ public class PersonaEngineTests
         _llmProviderMock = new Mock<ILlmProvider>();
         _personaConfigRepoMock = new Mock<IPersonaConfigurationRepository>();
         _memoryServiceMock = new Mock<IMemoryService>();
+        _workspaceServiceMock = new Mock<IWorkspaceService>();
         _loggerMock = new Mock<ILogger<PersonaEngine>>();
 
         _sut = new PersonaEngine(
             _llmProviderMock.Object,
             _personaConfigRepoMock.Object,
             _memoryServiceMock.Object,
+            _workspaceServiceMock.Object,
             _loggerMock.Object);
     }
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using ANXAgentSwarm.Core.Entities;
 using ANXAgentSwarm.Core.Enums;
@@ -7,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ANXAgentSwarm.Infrastructure.Services;
 
+#pragma warning disable CA1848 // Use LoggerMessage delegates for performance
+#pragma warning disable CA1305 // Specify IFormatProvider
+
 /// <summary>
 /// Engine for processing messages through personas using the LLM provider.
 /// </summary>
@@ -15,17 +19,20 @@ public class PersonaEngine : IPersonaEngine
     private readonly ILlmProvider _llmProvider;
     private readonly IPersonaConfigurationRepository _personaConfigRepository;
     private readonly IMemoryService _memoryService;
+    private readonly IWorkspaceService _workspaceService;
     private readonly ILogger<PersonaEngine> _logger;
 
     public PersonaEngine(
         ILlmProvider llmProvider,
         IPersonaConfigurationRepository personaConfigRepository,
         IMemoryService memoryService,
+        IWorkspaceService workspaceService,
         ILogger<PersonaEngine> logger)
     {
         _llmProvider = llmProvider;
         _personaConfigRepository = personaConfigRepository;
         _memoryService = memoryService;
+        _workspaceService = workspaceService;
         _logger = logger;
     }
 
@@ -96,6 +103,9 @@ public class PersonaEngine : IPersonaEngine
             // Process any memory store commands
             await ProcessMemoryCommands(session.Id, persona, llmResponse.Content, cancellationToken);
 
+            // Process any file write commands
+            await ProcessFileCommands(llmResponse.Content, cancellationToken);
+
             _logger.LogInformation(
                 "Persona {Persona} responded with type {ResponseType}",
                 persona, parsedResponse.ResponseType);
@@ -145,6 +155,14 @@ public class PersonaEngine : IPersonaEngine
         sb.AppendLine("- [STORE:identifier] content - Store important information to memory");
         sb.AppendLine("- [REMEMBER:identifier] - Recall stored information");
         sb.AppendLine("- [REASONING] your thinking [/REASONING] - Show your internal reasoning");
+        sb.AppendLine("- [FILE:relative/path/to/file.ext] file content here [/FILE] - Create or overwrite a file in the workspace");
+        sb.AppendLine();
+        sb.AppendLine("## File Creation");
+        sb.AppendLine("When creating files (code, HTML, documents, etc.), use the [FILE:path] tag:");
+        sb.AppendLine("Example: [FILE:hello.html]<!DOCTYPE html><html>...</html>[/FILE]");
+        sb.AppendLine("- Use relative paths only (e.g., 'output/index.html', not '/output/index.html')");
+        sb.AppendLine("- Directories will be created automatically");
+        sb.AppendLine("- You can create multiple files in a single response");
         sb.AppendLine();
 
         // Add session context
@@ -254,6 +272,33 @@ public class PersonaEngine : IPersonaEngine
                 _logger.LogWarning(
                     "Failed to store memory '{Identifier}': {Error}",
                     identifier, ex.Message);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes any file write commands in the response.
+    /// </summary>
+    private async Task ProcessFileCommands(
+        string rawResponse,
+        CancellationToken cancellationToken)
+    {
+        var fileWrites = ResponseParser.ExtractFileWrites(rawResponse);
+        foreach (var (filePath, content) in fileWrites)
+        {
+            try
+            {
+                await _workspaceService.WriteFileAsync(filePath, content, cancellationToken);
+
+                _logger.LogInformation(
+                    "Created file in workspace: {FilePath}",
+                    filePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    "Failed to write file '{FilePath}': {Error}",
+                    filePath, ex.Message);
             }
         }
     }

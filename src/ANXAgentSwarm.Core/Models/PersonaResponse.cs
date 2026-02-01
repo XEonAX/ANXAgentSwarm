@@ -121,4 +121,17 @@ public class PersonaResponse
             InternalReasoning = reasoning
         };
     }
+
+    /// <summary>
+    /// Creates a decline response.
+    /// </summary>
+    public static PersonaResponse Decline(string reason, string? reasoning = null)
+    {
+        return new PersonaResponse
+        {
+            Content = reason,
+            ResponseType = MessageType.Decline,
+            InternalReasoning = reasoning
+        };
+    }
 }

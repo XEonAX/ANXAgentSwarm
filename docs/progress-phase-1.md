@@ -108,6 +108,7 @@ Continue with Phase 2: Persona Engine
 - Implement the PersonaEngine using the IPersonaEngine interface
 - Add response parsing to detect [DELEGATE:X], [CLARIFY], [SOLUTION], [STUCK] tags
 - Wire up the services in DI
+- Provide the next prompt
 
 Update docs/progress-phase-2.md after completion.
 ```

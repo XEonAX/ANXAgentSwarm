@@ -4,6 +4,7 @@ using ANXAgentSwarm.Infrastructure.Data;
 using ANXAgentSwarm.Infrastructure.FileSystem;
 using ANXAgentSwarm.Infrastructure.LlmProviders;
 using ANXAgentSwarm.Infrastructure.Repositories;
+using ANXAgentSwarm.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,8 @@ public static class DependencyInjection
 
         // Register services
         services.AddScoped<IWorkspaceService, WorkspaceService>();
+        services.AddScoped<IMemoryService, MemoryService>();
+        services.AddScoped<IPersonaEngine, PersonaEngine>();
 
         // Register Ollama provider with HttpClient
         services.AddHttpClient<ILlmProvider, OllamaProvider>();

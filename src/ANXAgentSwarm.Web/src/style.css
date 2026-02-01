@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Custom styles for ANXAgentSwarm */
+@theme {
+  --color-primary-50: oklch(0.97 0.02 256);
+  --color-primary-100: oklch(0.93 0.04 256);
+  --color-primary-200: oklch(0.87 0.08 256);
+  --color-primary-300: oklch(0.79 0.12 256);
+  --color-primary-400: oklch(0.70 0.16 256);
+  --color-primary-500: oklch(0.60 0.20 256);
+  --color-primary-600: oklch(0.52 0.18 256);
+  --color-primary-700: oklch(0.44 0.15 256);
+  --color-primary-800: oklch(0.36 0.12 256);
+  --color-primary-900: oklch(0.28 0.09 256);
+  --color-primary-950: oklch(0.18 0.05 256);
+}
+
+/* Base body styles */
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded hover:bg-gray-400;
+}

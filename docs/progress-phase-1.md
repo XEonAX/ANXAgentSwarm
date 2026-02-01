@@ -109,7 +109,7 @@ Continue with Phase 2: Persona Engine
 - Add response parsing to detect [DELEGATE:X], [CLARIFY], [SOLUTION], [STUCK] tags
 - Wire up the services in DI
 
-Update PROGRESS.md after completion.
+Update docs/progress-phase-2.md after completion.
 ```
 
 ---
@@ -174,7 +174,7 @@ ANXAgentSwarm/
 ├── workspace/
 ├── docs/
 │   ├── IMPLEMENTATION_PLAN.md
-│   └── PROGRESS.md
+│   └── progress-phase-1.md
 ├── agents.md
 └── ANXAgentSwarm.sln
 ```

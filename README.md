@@ -7,6 +7,10 @@
 ![Vue](https://img.shields.io/badge/Vue-3.5-42b883)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+[![CI](https://github.com/yourusername/ANXAgentSwarm/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/ANXAgentSwarm/actions/workflows/ci.yml)
+[![Security](https://github.com/yourusername/ANXAgentSwarm/actions/workflows/security.yml/badge.svg)](https://github.com/yourusername/ANXAgentSwarm/actions/workflows/security.yml)
+[![codecov](https://codecov.io/gh/yourusername/ANXAgentSwarm/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/ANXAgentSwarm)
+
 **An Ollama-based multi-agent system for collaborative problem-solving**
 
 [Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [Contributing](#contributing)

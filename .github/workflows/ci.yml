@@ -1,0 +1,301 @@
+# CI Pipeline for ANXAgentSwarm
+# Runs on every push and pull request to main branch
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '22'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================
+  # Backend Build and Test
+  # ============================================
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+        
+      - name: Run unit tests
+        run: |
+          dotnet test tests/ANXAgentSwarm.Infrastructure.Tests/ANXAgentSwarm.Infrastructure.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=unit-test-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+            
+      - name: Run integration tests
+        run: |
+          dotnet test tests/ANXAgentSwarm.Integration.Tests/ANXAgentSwarm.Integration.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=integration-test-results.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+            
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-backend
+          path: ./TestResults
+          retention-days: 30
+          
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./TestResults/**/coverage.cobertura.xml
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+  # ============================================
+  # Frontend Build and Test
+  # ============================================
+  frontend:
+    name: Frontend (Vue 3)
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: src/ANXAgentSwarm.Web
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: src/ANXAgentSwarm.Web/package-lock.json
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Type check
+        run: npx vue-tsc --noEmit
+        
+      - name: Build
+        run: npm run build
+
+  # ============================================
+  # Code Quality Checks
+  # ============================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: src/ANXAgentSwarm.Web/package-lock.json
+          
+      # .NET Code Analysis
+      - name: Install dotnet-format
+        run: dotnet tool install -g dotnet-format
+        
+      - name: Check .NET formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+        continue-on-error: true
+        
+      # Frontend Linting
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/ANXAgentSwarm.Web
+        
+      - name: Check TypeScript types
+        run: npx vue-tsc --noEmit
+        working-directory: src/ANXAgentSwarm.Web
+
+  # ============================================
+  # Security Scanning
+  # ============================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp, javascript
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Build for CodeQL
+        run: dotnet build --configuration Release
+        
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"
+          
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        if: github.event_name == 'pull_request'
+
+  # ============================================
+  # E2E Tests (on PR only)
+  # ============================================
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [backend, frontend]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: src/ANXAgentSwarm.Web/package-lock.json
+          
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: src/ANXAgentSwarm.Web
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: src/ANXAgentSwarm.Web
+        
+      - name: Build backend
+        run: dotnet build --configuration Release
+        
+      - name: Start backend
+        run: |
+          dotnet run --project src/ANXAgentSwarm.Api/ANXAgentSwarm.Api.csproj --configuration Release &
+          sleep 10
+        env:
+          ASPNETCORE_URLS: http://localhost:5046
+          
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium
+        working-directory: src/ANXAgentSwarm.Web
+        env:
+          CI: true
+          
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: src/ANXAgentSwarm.Web/playwright-report
+          retention-days: 30
+
+  # ============================================
+  # Docker Build (verify only)
+  # ============================================
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Build Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.web
+          push: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================
+  # Final Status Check
+  # ============================================
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, code-quality, security, docker-build]
+    if: always()
+    
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.backend.result }}" != "success" ]] || \
+             [[ "${{ needs.frontend.result }}" != "success" ]] || \
+             [[ "${{ needs.code-quality.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]] || \
+             [[ "${{ needs.docker-build.result }}" != "success" ]]; then
+            echo "One or more jobs failed"
+            exit 1
+          fi
+          echo "All CI jobs passed successfully! ✅"

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coverlet Run Settings for Code Coverage -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <Exclude>
+            [*]*.Migrations.*,
+            [*.Tests]*,
+            [*.Integration.Tests]*
+          </Exclude>
+          <Include>
+            [ANXAgentSwarm.Core]*,
+            [ANXAgentSwarm.Infrastructure]*,
+            [ANXAgentSwarm.Api]*
+          </Include>
+          <ExcludeByAttribute>
+            Obsolete,
+            GeneratedCodeAttribute,
+            CompilerGeneratedAttribute,
+            ExcludeFromCodeCoverage
+          </ExcludeByAttribute>
+          <ExcludeByFile>
+            **/Migrations/*.cs,
+            **/*.Designer.cs
+          </ExcludeByFile>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
+          <DeterministicReport>true</DeterministicReport>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

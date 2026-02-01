@@ -1,0 +1,127 @@
+# Dependabot Configuration
+# Keeps dependencies up to date automatically
+
+version: 2
+
+registries:
+  nuget-org:
+    type: nuget-feed
+    url: https://api.nuget.org/v3/index.json
+  npm-registry:
+    type: npm-registry
+    url: https://registry.npmjs.org
+
+updates:
+  # .NET dependencies
+  - package-ecosystem: "nuget"
+    directory: "/"
+    registries:
+      - nuget-org
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(nuget)"
+    labels:
+      - "dependencies"
+      - "dotnet"
+    reviewers:
+      - "yourusername"
+    groups:
+      dotnet-testing:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "FluentAssertions"
+          - "Moq"
+          - "coverlet*"
+        update-types:
+          - "minor"
+          - "patch"
+      dotnet-ef:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+      dotnet-aspnet:
+        patterns:
+          - "Microsoft.AspNetCore*"
+
+  # Frontend npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/src/ANXAgentSwarm.Web"
+    registries:
+      - npm-registry
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - "dependencies"
+      - "frontend"
+    reviewers:
+      - "yourusername"
+    groups:
+      vue-ecosystem:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+          - "pinia*"
+        update-types:
+          - "minor"
+          - "patch"
+      vite-ecosystem:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+      typescript:
+        patterns:
+          - "typescript*"
+          - "@types/*"
+      playwright:
+        patterns:
+          - "@playwright/*"
+          - "playwright*"
+      tailwind:
+        patterns:
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(actions)"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(docker)"
+    labels:
+      - "dependencies"
+      - "docker"

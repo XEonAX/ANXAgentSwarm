@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/yourusername/ANXAgentSwarm/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: Documentation
+    url: https://github.com/yourusername/ANXAgentSwarm/tree/main/docs
+    about: Check out our documentation for guides and references

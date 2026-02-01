@@ -1,0 +1,30 @@
+# Codeowners file
+# These owners will be the default owners for everything in the repo.
+# They will be requested for review when someone opens a pull request.
+
+# Default owners for everything
+* @yourusername
+
+# Backend code
+/src/ANXAgentSwarm.Api/ @yourusername
+/src/ANXAgentSwarm.Core/ @yourusername
+/src/ANXAgentSwarm.Infrastructure/ @yourusername
+
+# Frontend code
+/src/ANXAgentSwarm.Web/ @yourusername
+
+# Tests
+/tests/ @yourusername
+
+# Documentation
+/docs/ @yourusername
+*.md @yourusername
+
+# CI/CD
+/.github/ @yourusername
+/scripts/ @yourusername
+
+# Docker
+/Dockerfile* @yourusername
+/docker-compose* @yourusername
+/docker/ @yourusername

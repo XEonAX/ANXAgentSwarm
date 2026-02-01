@@ -299,7 +299,7 @@ public interface ILlmProvider
 
 public class LlmRequest
 {
-    public string Model { get; set; } = "gemma3";
+    public string Model { get; set; } = "gemma3:27b";
     public string SystemPrompt { get; set; }
     public List<ChatMessage> Messages { get; set; }
     public double Temperature { get; set; } = 0.7;
@@ -380,20 +380,20 @@ public class SessionHub : Hub
 {
   "Ollama": {
     "BaseUrl": "http://localhost:11434",
-    "DefaultModel": "gemma3",
+    "DefaultModel": "gemma3:27b",
     "TimeoutSeconds": 120
   },
   "Personas": {
-    "Coordinator": { "Model": "gemma3", "Temperature": 0.7 },
-    "BusinessAnalyst": { "Model": "gemma3", "Temperature": 0.7 },
-    "TechnicalArchitect": { "Model": "gemma3", "Temperature": 0.6 },
-    "SeniorDeveloper": { "Model": "gemma3", "Temperature": 0.5 },
-    "JuniorDeveloper": { "Model": "gemma3", "Temperature": 0.6 },
-    "SeniorQA": { "Model": "gemma3", "Temperature": 0.5 },
-    "JuniorQA": { "Model": "gemma3", "Temperature": 0.6 },
-    "UXEngineer": { "Model": "gemma3", "Temperature": 0.7 },
-    "UIEngineer": { "Model": "gemma3", "Temperature": 0.6 },
-    "DocumentWriter": { "Model": "gemma3", "Temperature": 0.7 }
+    "Coordinator": { "Model": "gemma3:27b", "Temperature": 0.7 },
+    "BusinessAnalyst": { "Model": "gemma3:27b", "Temperature": 0.7 },
+    "TechnicalArchitect": { "Model": "gemma3:27b", "Temperature": 0.6 },
+    "SeniorDeveloper": { "Model": "gemma3:27b", "Temperature": 0.5 },
+    "JuniorDeveloper": { "Model": "gemma3:27b", "Temperature": 0.6 },
+    "SeniorQA": { "Model": "gemma3:27b", "Temperature": 0.5 },
+    "JuniorQA": { "Model": "gemma3:27b", "Temperature": 0.6 },
+    "UXEngineer": { "Model": "gemma3:27b", "Temperature": 0.7 },
+    "UIEngineer": { "Model": "gemma3:27b", "Temperature": 0.6 },
+    "DocumentWriter": { "Model": "gemma3:27b", "Temperature": 0.7 }
   },
   "Memory": {
     "MaxWordsPerMemory": 2000,

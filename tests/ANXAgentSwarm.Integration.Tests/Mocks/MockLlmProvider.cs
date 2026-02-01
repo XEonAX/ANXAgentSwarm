@@ -198,7 +198,7 @@ public class MockLlmProvider : ILlmProvider
     /// <inheritdoc />
     public Task<IEnumerable<string>> GetAvailableModelsAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<IEnumerable<string>>(new[] { "mock-model", "gemma3" });
+        return Task.FromResult<IEnumerable<string>>(new[] { "mock-model", "gemma3:27b" });
     }
 }
 

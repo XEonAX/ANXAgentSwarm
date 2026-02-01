@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API (Backend)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/src/ANXAgentSwarm.Api/bin/Debug/net8.0/ANXAgentSwarm.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/ANXAgentSwarm.Api",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5122"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Web (Frontend)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src/ANXAgentSwarm.Web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "uriFormat": "%s"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack (API + Web)",
+      "configurations": ["API (Backend)", "Web (Frontend)"],
+      "stopAll": true
+    }
+  ]
+}

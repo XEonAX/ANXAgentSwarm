@@ -251,7 +251,7 @@ Created environment configuration files:
 |----------|-------------|---------|
 | `ASPNETCORE_ENVIRONMENT` | Environment mode | Development |
 | `OLLAMA_BASE_URL` | Ollama server URL | http://localhost:11434 |
-| `OLLAMA_MODEL` | Default LLM model | gemma3 |
+| `OLLAMA_MODEL` | Default LLM model | gemma3:27b |
 | `OLLAMA_TIMEOUT` | Request timeout | 120 |
 | `DATABASE_CONNECTION` | SQLite connection | Data Source=./anxagentswarm.db |
 | `WORKSPACE_ROOT` | Workspace folder | ./workspace |
@@ -384,7 +384,7 @@ npm run test:report
 ./scripts/deploy-docker.sh logs
 
 # Pull Ollama model
-./scripts/deploy-docker.sh pull-model gemma3
+./scripts/deploy-docker.sh pull-model gemma3:27b
 
 # Stop services
 ./scripts/deploy-docker.sh stop

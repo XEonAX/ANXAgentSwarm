@@ -16,9 +16,9 @@ public class OllamaOptions
     public string BaseUrl { get; set; } = "http://localhost:11434";
 
     /// <summary>
-    /// Default model to use (default: gemma3).
+    /// Default model to use (default: gemma3:27b).
     /// </summary>
-    public string DefaultModel { get; set; } = "gemma3";
+    public string DefaultModel { get; set; } = "gemma3:27b";
 
     /// <summary>
     /// Request timeout in seconds (default: 120).

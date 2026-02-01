@@ -25,7 +25,7 @@ public class PersonaConfiguration
     /// <summary>
     /// The LLM model to use for this persona.
     /// </summary>
-    public string ModelName { get; set; } = "gemma3";
+    public string ModelName { get; set; } = "gemma3:27b";
 
     /// <summary>
     /// The system prompt that defines this persona's behavior.

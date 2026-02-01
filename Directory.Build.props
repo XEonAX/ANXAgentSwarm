@@ -1,5 +1,5 @@
-# ANXAgentSwarm Directory.Build.props
-# Shared build properties for all projects
+<!-- ANXAgentSwarm Directory.Build.props -->
+<!-- Shared build properties for all projects -->
 
 <Project>
   <PropertyGroup>

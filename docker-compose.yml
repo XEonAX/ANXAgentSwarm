@@ -61,7 +61,7 @@ services:
       - ASPNETCORE_URLS=http://+:5046
       - ConnectionStrings__DefaultConnection=Data Source=/app/data/anxagentswarm.db
       - Ollama__BaseUrl=http://ollama:11434
-      - Ollama__DefaultModel=${OLLAMA_MODEL:-gemma3}
+      - Ollama__DefaultModel=${OLLAMA_MODEL:-gemma3:27b}
       - Ollama__TimeoutSeconds=120
       - Workspace__RootPath=/app/workspace
       - Memory__MaxWordsPerMemory=2000

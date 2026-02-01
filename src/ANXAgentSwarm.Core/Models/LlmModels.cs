@@ -24,7 +24,7 @@ public class LlmRequest
     /// <summary>
     /// The model to use for generation.
     /// </summary>
-    public string Model { get; set; } = "gemma3";
+    public string Model { get; set; } = "gemma3:27b";
 
     /// <summary>
     /// The system prompt to set the context.

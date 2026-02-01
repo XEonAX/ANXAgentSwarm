@@ -60,7 +60,7 @@ public class PersonaEngineTests
         Id = Guid.NewGuid(),
         PersonaType = persona,
         DisplayName = persona.ToString(),
-        ModelName = "gemma3",
+        ModelName = "gemma3:27b",
         SystemPrompt = "You are a helpful assistant.",
         Temperature = 0.7,
         MaxTokens = 4096,

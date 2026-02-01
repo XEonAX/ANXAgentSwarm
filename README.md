@@ -40,7 +40,7 @@ ANXAgentSwarm is an intelligent multi-agent orchestration system that leverages 
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 22+](https://nodejs.org/)
-- [Ollama](https://ollama.ai/) with a model installed (default: `gemma3`)
+- [Ollama](https://ollama.ai/) with a model installed (default: `gemma3:27b`)
 
 ### Installation
 
@@ -51,7 +51,7 @@ cd ANXAgentSwarm
 
 # Start Ollama and pull the default model
 ollama serve
-ollama pull gemma3
+ollama pull gemma3:27b
 
 # Start the development servers
 ./scripts/dev.sh
@@ -173,7 +173,7 @@ ANXAgentSwarm/
 |----------|-------------|---------|
 | `ASPNETCORE_ENVIRONMENT` | Environment mode | `Development` |
 | `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434` |
-| `OLLAMA_MODEL` | Default LLM model | `gemma3` |
+| `OLLAMA_MODEL` | Default LLM model | `gemma3:27b` |
 | `OLLAMA_TIMEOUT` | Request timeout (seconds) | `120` |
 | `DATABASE_CONNECTION` | SQLite connection string | `Data Source=./anxagentswarm.db` |
 | `WORKSPACE_ROOT` | Workspace folder path | `./workspace` |

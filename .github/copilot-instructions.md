@@ -12,7 +12,7 @@ ANXAgentSwarm is an Ollama-based multi-agent system built with .NET 8 (C#) and V
 - **.NET 8** with ASP.NET Core Web API
 - **SQLite** with Entity Framework Core
 - **SignalR** for real-time communication
-- **Ollama** as the LLM provider (default model: gemma3)
+- **Ollama** as the LLM provider (default model: gemma3:27b)
 
 ### Frontend
 - **Vue 3** with Composition API

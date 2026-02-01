@@ -307,8 +307,8 @@ export class MockApi {
         contentType: 'application/json',
         body: JSON.stringify({
           isAvailable: true,
-          availableModels: ['gemma3', 'llama2'],
-          defaultModel: 'gemma3'
+          availableModels: ['gemma3:27b', 'llama2'],
+          defaultModel: 'gemma3:27b'
         })
       })
     })

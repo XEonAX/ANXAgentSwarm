@@ -39,7 +39,7 @@ assignees: ''
 - **ANXAgentSwarm Version**: [e.g., 1.0.0]
 - **.NET Version**: [e.g., 8.0.1]
 - **Node.js Version**: [e.g., 22.0.0]
-- **Ollama Model**: [e.g., gemma3]
+- **Ollama Model**: [e.g., gemma3:27b]
 
 ### Deployment
 - [ ] Local development

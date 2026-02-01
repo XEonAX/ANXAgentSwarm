@@ -40,6 +40,24 @@ public interface IAgentOrchestrator
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Initializes a new session without processing. Use this for real-time streaming,
+    /// followed by ProcessSessionAsync.
+    /// </summary>
+    /// <param name="problemStatement">The problem to solve.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created session (not yet processed).</returns>
+    Task<Session> InitializeSessionAsync(string problemStatement, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Processes an initialized session with the orchestration loop.
+    /// This broadcasts messages in real-time via SignalR.
+    /// </summary>
+    /// <param name="sessionId">The session ID to process.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The processed session.</returns>
+    Task<Session> ProcessSessionAsync(Guid sessionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Resumes a paused or stuck session.
     /// </summary>
     /// <param name="sessionId">The session ID.</param>

@@ -23,7 +23,8 @@ public record SessionDto(
     string? FinalSolution,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    int MessageCount
+    int MessageCount,
+    PersonaType? CurrentPersona
 );
 
 /// <summary>

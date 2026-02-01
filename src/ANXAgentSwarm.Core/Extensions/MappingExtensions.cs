@@ -21,7 +21,8 @@ public static class MappingExtensions
             session.FinalSolution,
             session.CreatedAt,
             session.UpdatedAt,
-            session.Messages?.Count ?? 0
+            session.Messages?.Count ?? 0,
+            session.CurrentPersona
         );
     }
 

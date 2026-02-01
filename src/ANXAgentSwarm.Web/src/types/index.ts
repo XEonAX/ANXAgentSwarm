@@ -106,6 +106,7 @@ export interface SessionDto {
   createdAt: string
   updatedAt: string
   messageCount: number
+  currentPersona: PersonaType | null
 }
 
 /**

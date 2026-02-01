@@ -120,18 +120,25 @@ export function useSession(sessionId?: string) {
   
   /**
    * Creates a new session and connects to it.
+   * IMPORTANT: We connect to SignalR and set up handlers BEFORE the API call returns,
+   * so we can receive real-time updates as the session is processed in the background.
    */
   async function createSession(problemStatement: string): Promise<SessionDetailDto> {
-    const session = await store.createSession(problemStatement)
-    
-    // Connect to the new session
-    activeSessionId.value = session.id
-    
+    // Connect to SignalR FIRST (before API call)
     if (!signalR.isConnected()) {
       await signalR.connect()
     }
     
+    // Set up handlers before creating session so we catch all messages
     setupSignalRHandlers()
+    
+    // Create the session via API
+    const session = await store.createSession(problemStatement)
+    
+    // Set active session ID
+    activeSessionId.value = session.id
+    
+    // Join the session room ASAP to receive real-time updates
     await signalR.joinSession(session.id)
     isConnected.value = true
     

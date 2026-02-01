@@ -221,6 +221,9 @@ public static partial class ResponseParser
             var filePath = match.Groups["path"].Value.Trim();
             var content = match.Groups["content"].Value.Trim();
             
+            // Strip markdown code block markers if present
+            content = StripMarkdownCodeBlocks(content);
+            
             // Basic path validation - ensure it's a relative path
             if (!string.IsNullOrWhiteSpace(filePath) && !Path.IsPathRooted(filePath))
             {
@@ -229,6 +232,32 @@ public static partial class ResponseParser
         }
 
         return files;
+    }
+
+    /// <summary>
+    /// Strips markdown code block markers from content.
+    /// Handles patterns like ```html ... ``` or ``` ... ```
+    /// </summary>
+    private static string StripMarkdownCodeBlocks(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return content;
+        }
+
+        var result = content.Trim();
+        
+        // Pattern to match opening code fence with optional language: ```html, ```js, ```
+        // and closing code fence: ```
+        var codeBlockPattern = CodeBlockRegex();
+        var match = codeBlockPattern.Match(result);
+        
+        if (match.Success)
+        {
+            result = match.Groups["code"].Value.Trim();
+        }
+        
+        return result;
     }
 
     /// <summary>
@@ -341,4 +370,7 @@ public static partial class ResponseParser
 
     [GeneratedRegex(@"\[FILE:(?<path>[^\]]+)\]\s*(?<content>[\s\S]*?)\[/FILE\]", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex FileRegex();
+
+    [GeneratedRegex(@"^`{3,}\w*\s*(?<code>[\s\S]*?)`{3,}$", RegexOptions.Singleline)]
+    private static partial Regex CodeBlockRegex();
 }

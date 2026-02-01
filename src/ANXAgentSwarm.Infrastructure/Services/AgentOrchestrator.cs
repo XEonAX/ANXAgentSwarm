@@ -51,7 +51,17 @@ public class AgentOrchestrator : IAgentOrchestrator
         string problemStatement,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting new session with problem statement");
+        // Initialize and process in one call (legacy behavior for backward compatibility)
+        var session = await InitializeSessionAsync(problemStatement, cancellationToken);
+        return await ProcessSessionAsync(session.Id, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Session> InitializeSessionAsync(
+        string problemStatement,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Initializing new session with problem statement");
 
         // Create the session
         var session = new Session
@@ -81,6 +91,28 @@ public class AgentOrchestrator : IAgentOrchestrator
 
         await _messageRepository.CreateAsync(userMessage, cancellationToken);
 
+        // Reload session to include the message
+        session = await _sessionRepository.GetByIdWithMessagesAsync(session.Id, cancellationToken)
+            ?? throw new InvalidOperationException("Session not found after creation");
+
+        return session;
+    }
+
+    /// <inheritdoc />
+    public async Task<Session> ProcessSessionAsync(
+        Guid sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Processing session {SessionId}", sessionId);
+
+        var session = await _sessionRepository.GetByIdWithMessagesAsync(sessionId, cancellationToken)
+            ?? throw new InvalidOperationException($"Session {sessionId} not found");
+
+        // Get the initial problem statement message
+        var userMessage = session.Messages
+            .FirstOrDefault(m => m.MessageType == MessageType.ProblemStatement)
+            ?? throw new InvalidOperationException("Session has no problem statement message");
+
         // Broadcast the initial message
         await _hubBroadcaster.BroadcastMessageReceivedAsync(
             session.Id, userMessage.ToDto(), cancellationToken);
@@ -90,7 +122,7 @@ public class AgentOrchestrator : IAgentOrchestrator
 
         // Reload session to get updated state
         session = await _sessionRepository.GetByIdWithMessagesAsync(session.Id, cancellationToken)
-            ?? throw new InvalidOperationException("Session not found after creation");
+            ?? throw new InvalidOperationException("Session not found after processing");
 
         return session;
     }

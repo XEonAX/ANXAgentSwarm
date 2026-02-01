@@ -151,7 +151,8 @@ export const useSessionStore = defineStore('session', () => {
         finalSolution: session.finalSolution,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
-        messageCount: session.messages.length
+        messageCount: session.messages.length,
+        currentPersona: session.currentPersona
       })
       
       return session

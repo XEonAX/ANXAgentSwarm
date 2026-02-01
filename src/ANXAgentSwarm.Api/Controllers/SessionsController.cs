@@ -2,6 +2,7 @@ using ANXAgentSwarm.Core.DTOs;
 using ANXAgentSwarm.Core.Extensions;
 using ANXAgentSwarm.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ANXAgentSwarm.Api.Controllers;
 
@@ -15,22 +16,26 @@ public class SessionsController : ControllerBase
     private readonly ISessionRepository _sessionRepository;
     private readonly IMessageRepository _messageRepository;
     private readonly IAgentOrchestrator _orchestrator;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SessionsController> _logger;
 
     public SessionsController(
         ISessionRepository sessionRepository,
         IMessageRepository messageRepository,
         IAgentOrchestrator orchestrator,
+        IServiceScopeFactory scopeFactory,
         ILogger<SessionsController> logger)
     {
         _sessionRepository = sessionRepository;
         _messageRepository = messageRepository;
         _orchestrator = orchestrator;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
     /// <summary>
-    /// Creates a new problem-solving session.
+    /// Creates a new problem-solving session and starts processing asynchronously.
+    /// Returns immediately with the session ID so the client can subscribe to SignalR updates.
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<SessionDetailDto>> Create(
@@ -44,7 +49,29 @@ public class SessionsController : ControllerBase
 
         try
         {
-            var session = await _orchestrator.StartSessionAsync(request.ProblemStatement, cancellationToken);
+            // Initialize the session (creates it in DB with initial message)
+            var session = await _orchestrator.InitializeSessionAsync(request.ProblemStatement, cancellationToken);
+            var sessionId = session.Id;
+            
+            // Start processing in the background (fire and forget)
+            // This allows the client to receive real-time updates via SignalR
+            // We create a new scope because the original request's scope will be disposed
+            _ = Task.Run(async () =>
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var orchestrator = scope.ServiceProvider.GetRequiredService<IAgentOrchestrator>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<SessionsController>>();
+                
+                try
+                {
+                    await orchestrator.ProcessSessionAsync(sessionId, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error processing session {SessionId}", sessionId);
+                }
+            });
+            
             return CreatedAtAction(nameof(GetById), new { id = session.Id }, session.ToDetailDto());
         }
         catch (Exception ex)

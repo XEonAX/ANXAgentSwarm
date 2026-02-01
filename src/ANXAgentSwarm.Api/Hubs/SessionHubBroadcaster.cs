@@ -33,7 +33,11 @@ public class SessionHubBroadcaster : ISessionHubBroadcaster
 
         await _hubContext.Clients
             .Group(sessionId.ToString())
-            .SendAsync("MessageReceived", message, cancellationToken);
+            .SendAsync("MessageReceived", new
+            {
+                SessionId = sessionId.ToString(),
+                Message = message
+            }, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -48,7 +52,12 @@ public class SessionHubBroadcaster : ISessionHubBroadcaster
 
         await _hubContext.Clients
             .Group(sessionId.ToString())
-            .SendAsync("SessionStatusChanged", session, cancellationToken);
+            .SendAsync("SessionStatusChanged", new
+            {
+                SessionId = sessionId.ToString(),
+                Status = session.Status,
+                CurrentPersona = session.CurrentPersona
+            }, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -63,7 +72,12 @@ public class SessionHubBroadcaster : ISessionHubBroadcaster
 
         await _hubContext.Clients
             .Group(sessionId.ToString())
-            .SendAsync("ClarificationRequested", message, cancellationToken);
+            .SendAsync("ClarificationRequested", new
+            {
+                SessionId = sessionId.ToString(),
+                Question = message.Content,
+                FromPersona = message.FromPersona
+            }, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -78,7 +92,11 @@ public class SessionHubBroadcaster : ISessionHubBroadcaster
 
         await _hubContext.Clients
             .Group(sessionId.ToString())
-            .SendAsync("SolutionReady", session, cancellationToken);
+            .SendAsync("SolutionReady", new
+            {
+                SessionId = sessionId.ToString(),
+                Solution = session.FinalSolution
+            }, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -96,9 +114,9 @@ public class SessionHubBroadcaster : ISessionHubBroadcaster
             .Group(sessionId.ToString())
             .SendAsync("SessionStuck", new
             {
-                Session = session,
+                SessionId = sessionId.ToString(),
                 PartialResults = partialResults,
-                Timestamp = DateTime.UtcNow
+                Reason = "Session is stuck and requires attention"
             }, cancellationToken);
     }
 }
